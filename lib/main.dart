@@ -49,10 +49,9 @@ class _HomeScreenState extends State<HomeScreen> {
   final _display = DisplayService();
   final _places = PlacesService();
   final _events = EventsService();
-  late final LlmService _llm = LlmService(
-      endpoint: const String.fromEnvironment('LLM_ENDPOINT', defaultValue: 'https://example.invalid/concierge'),
-      apiKeyProvider: () async => const String.fromEnvironment('LLM_KEY'),
-      memory: widget.memory);
+  late final LlmService _llm = LlmService(memory: widget.memory);
+  bool _llmReady = false;
+  static const _kiosk = MethodChannel('kiosk');
 
   Lang _lang = languages.first;
   bool _langBanner = false;
@@ -68,6 +67,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _display.start().catchError((_) {});
+    _llm.init().then((_) => setState(() => _llmReady = true)).catchError((e) {
+      setState(() => _answer = '⚠ Modell nicht geladen: $e');
+    });
   }
 
   @override
@@ -86,6 +88,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _send(String text) async {
     if (text.trim().isEmpty) return;
+    if (!_llmReady) {
+      // Ohne Modell zumindest die wichtigsten Dinge deterministisch beantworten.
+      final t = text.toLowerCase();
+      if (t.contains('wlan') || t.contains('wifi')) {
+        setState(() {
+          _answer = 'WLAN: ${widget.repo.data['wlan']?['name']}\n${widget.repo.data['wlan']?['passwort']}';
+          _qr = widget.repo.wifiQrPayload;
+        });
+      } else if (t.contains('check')) {
+        setState(() {
+          _checks = List<String>.from(widget.repo.data['checkout']?['checkliste'] ?? []);
+          _done.clear();
+        });
+      } else {
+        setState(() => _answer = '…');
+      }
+      return;
+    }
     _display.touch();
     setState(() => _busy = true);
     try {
@@ -241,7 +261,25 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _topBar() => Container(
+  Future<void> _adminExit() async {
+    final c = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('PIN'),
+        content: TextField(controller: c, obscureText: true, keyboardType: TextInputType.number),
+        actions: [TextButton(onPressed: () => Navigator.pop(context, c.text == '${widget.repo.data['admin_pin']}'), child: const Text('OK'))],
+      ),
+    );
+    if (ok == true) await _kiosk.invokeMethod('stop');
+  }
+
+  Widget _topBar() => GestureDetector(
+        onLongPress: _adminExit,
+        child: _topBarInner(),
+      );
+
+  Widget _topBarInner() => Container(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         child: Row(children: [

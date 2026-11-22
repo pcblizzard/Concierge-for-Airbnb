@@ -4,8 +4,8 @@ import 'links.dart';
 /// Holt Eventseiten als Rohtext und gibt sie der LLM als Kontext, damit sie
 /// nach Wunsch des Gastes (Konzert, Sport, Oper, Ausgehen ...) auswählt.
 /// Hinweis: Beide Seiten bieten keine offizielle API; HTML kann sich ändern.
-/// URL für "München mit Vergnügen" bitte prüfen und ggf. anpassen.
-const muenchenMitVergnuegenUrl = 'https://www.muenchen-mit-vergnuegen.de/';
+/// URL: München mit Vergnügen.
+const muenchenMitVergnuegenUrl = 'https://muenchen.mitvergnuegen.com/';
 
 class EventsService {
   Future<String> snippets() async {

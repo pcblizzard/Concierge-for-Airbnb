@@ -12,8 +12,21 @@ package de.concierge.concierge_airbnb
 import android.app.ActivityManager
 import android.os.Bundle
 import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
 
+// Bildschirm anheften (Screen Pinning): Gast kann die App nicht verlassen.
 class MainActivity : FlutterActivity() {
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "kiosk").setMethodCallHandler { call, result ->
+            when (call.method) {
+                "stop" -> { stopLockTask(); result.success(null) }
+                "start" -> { startLockTask(); result.success(null) }
+                else -> result.notImplemented()
+            }
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val am = getSystemService(ACTIVITY_SERVICE) as ActivityManager
@@ -21,6 +34,4 @@ class MainActivity : FlutterActivity() {
     }
 }
 KT
-echo "Fertig. Für echten Kiosk ohne Bestätigungsdialog Gerät einmalig als Device Owner setzen:"
-echo "  adb shell dpm set-device-owner de.concierge.concierge_airbnb/.AdminReceiver   (siehe README)"
-echo "Alternativ: Android 'App-Pinning' in den Einstellungen aktivieren (Bildschirm anheften)."
+echo "Fertig. Einmalig am Tablet: Einstellungen > Sicherheit > Erweitert > App-Anheftung (Bildschirm anheften) einschalten."

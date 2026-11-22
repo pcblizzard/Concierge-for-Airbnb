@@ -18,15 +18,29 @@ Wand-Tablet (Android) für Gäste einer Airbnb-Wohnung in München. Mehrsprachig
 - Wake-on-Approach (Frontkamera, nur Bewegungsdifferenz, nichts wird gespeichert) und Nachtdimmung 22-7 Uhr
 - Kiosk: Lock-Task-Modus über `tool/setup_android.sh`
 
+## Ohne Server
+Die LLM läuft auf dem Tablet (Gemma über MediaPipe, Paket `flutter_gemma`). Kein Proxy, kein API-Key.
+Nur Places, Events wie Wetterlinks brauchen das WLAN. Ohne geladenes Modell beantwortet die App WLAN und Check-out trotzdem.
+
+Modell wählen (Hugging Face, Lizenz akzeptieren), als `.task`-Datei:
+- Gemma 3n E2B (ca. 3 GB, besser bei vielen Sprachen, braucht ca. 6 GB RAM)
+- Gemma 3 1B int4 (ca. 0,5 GB, läuft auf schwachen Tablets, bei Türkisch & Co. spürbar schwächer)
+
+```
+adb push model.task /sdcard/Android/data/de.concierge.concierge_airbnb/files/model.task
+```
+
 ## Start
 ```
 tool/setup_android.sh
 flutter pub get
-flutter run --dart-define=LLM_ENDPOINT=https://dein-proxy --dart-define=LLM_KEY=... --dart-define=PLACES_KEY=...
+flutter run --dart-define=PLACES_KEY=...
 ```
+Kiosk: Android-Einstellungen > Sicherheit > Erweitert > App-Anheftung einschalten. Die App heftet sich beim Start selbst an
+(einmal Bestätigen). Beenden: lange auf die Sprachleiste oben drücken, PIN aus `wohnung.json` (`admin_pin`, bitte ändern).
 
 ## Bekannte Grenzen
 - Android-STT erkennt die Sprache nicht selbst. Es wird in der gewählten Sprache gehört; schreibt/spricht der Gast in einer anderen, erkennt die LLM sie am Text und die App wechselt.
-- Echter Kiosk ohne Dialog braucht Device Owner (`adb shell dpm set-device-owner ...` mit eigenem DeviceAdminReceiver) oder Bildschirm-Anheften in den Android-Einstellungen.
-- Eventseiten haben keine API; die HTML-Auswertung durch die LLM kann brechen. URL von München mit Vergnügen bitte prüfen.
-- Nicht kompiliert oder auf einem Gerät getestet (kein Flutter in der Entwicklungsumgebung).
+- Kleine On-Device-Modelle halten das JSON-Format nicht immer ein. Die App liest tolerant und zeigt sonst den Rohtext.
+- Eventseiten haben keine API; die Auswertung kann brechen.
+- Nicht kompiliert oder getestet (kein Flutter in der Entwicklungsumgebung). Die `flutter_gemma`-API ist am ehesten anzupassen (`LlmService.init/_generate`).
