@@ -1,0 +1,24 @@
+{
+  "_hinweis": "Nur auf Deutsch pflegen. Die LLM übersetzt zur Laufzeit in die Gastsprache.",
+  "adresse": { "text": "Beispielstraße 1, 80331 München", "lat": 48.1351, "lng": 11.582 },
+  "wlan": { "name": "MeinWLAN", "passwort": "geheim1234", "verschluesselung": "WPA" },
+  "checkout": {
+    "uhrzeit": "11:00",
+    "schluessel": "In den Briefkasten im Erdgeschoss werfen.",
+    "checkliste": [
+      "Spülmaschine anstellen",
+      "Müll runterbringen (Hof, Tonnen rechts)",
+      "Fenster schließen",
+      "Heizung runterdrehen",
+      "Licht ausschalten"
+    ]
+  },
+  "heizung": "Thermostat im Wohnzimmer, Stufe 3 reicht.",
+  "notruf": [
+    { "name": "Polizei", "nummer": "110" },
+    { "name": "Feuerwehr / Rettungsdienst", "nummer": "112" },
+    { "name": "Ärztlicher Bereitschaftsdienst", "nummer": "116117" }
+  ],
+  "sonntag": "Hauptbahnhof, Ostbahnhof und Tankstellen haben sonntags geöffnet.",
+  "hausregeln": ["Ruhezeiten 22-7 Uhr", "Nicht rauchen"]
+}
